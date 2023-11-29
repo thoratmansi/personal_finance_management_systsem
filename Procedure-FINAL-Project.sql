@@ -116,6 +116,33 @@ END;
 
 EXEC InsertLoanDealNotification;
 
+--Stored Procedure to execute a InsertNotificationBasedOnDueDays with 3 days grace days, and add notification to all the users regarding the payment due date 
+-- and loan offers 
+GO;
+CREATE PROC dbo.send_notification_to_users
+AS
+BEGIN
+    DECLARE @UserID UNIQUEIDENTIFIER;
+
+    DECLARE UserCursor CURSOR FOR
+    SELECT DISTINCT PROFILE_ID
+    FROM profile;
+
+    OPEN UserCursor;
+    FETCH NEXT FROM UserCursor INTO @UserID;
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        EXEC dbo.InsertNotificationsBasedOnDueDays @UserID,3;
+        EXEC dbo.InsertLoanDealNotification;
+        FETCH NEXT FROM UserCursor INTO @UserID;
+    END
+
+    CLOSE UserCursor;
+    DEALLOCATE UserCursor;
+END;
+
+
 
 
 
